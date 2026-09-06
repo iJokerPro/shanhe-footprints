@@ -1,6 +1,6 @@
 import ts from 'typescript';import fs from 'node:fs';import assert from 'node:assert/strict';
 const code=ts.transpileModule(fs.readFileSync('lib/cloud-state.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
-const {overlay,acknowledge,diff,validCities}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+const {overlay,acknowledge,diff,validCities,validTimes,earliestVisit}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
 const allowed=new Set(['440100','460200']);
 assert.deepEqual(validCities(['440100','440100'],allowed),['440100']);
 assert.throws(()=>validCities(['bad-id'],allowed));assert.throws(()=>validCities({cities:[]},allowed));
@@ -11,3 +11,12 @@ assert.deepEqual(overlay(['440100','460200'],newer),['460200'],'Pending removals
 assert.deepEqual(diff(['440100'],['440100','460200'],7),{'460200':{visited:true,revision:7}},'Only changed cities should be uploaded');
 assert.deepEqual(overlay(['460200'],sent).sort(),['440100','460200'],'Other device city writes must be retained');
 console.log('Passed cloud queue, stale acknowledgement, per-city diff, merge, backup validation tests.');
+
+const times=validTimes({'440100':'2024-05-01T10:00:00+08:00','460200':'2023-02-01T08:00:00Z'},['440100','460200']);
+assert.equal(earliestVisit(['440100','460200'],times),'2023-02-01T08:00:00.000Z');
+assert.equal(earliestVisit(['440100'],times),'2024-05-01T02:00:00.000Z','Removing the earliest city recalculates province time');
+assert.equal(validTimes({},['440100'])['440100'],null,'Historical visits must stay undated');
+assert.equal(validTimes({'440100':'invalid'},['440100'])['440100'],null);
+assert.equal(earliestVisit([],times),null);
+assert.deepEqual(acknowledge({'440100':{visited:true,revision:3,visitedAt:times['440100']}},{'440100':{visited:true,revision:2,visitedAt:null}}),{'440100':{visited:true,revision:3,visitedAt:times['440100']}},'Newer date edits survive stale responses');
+console.log('Passed date normalization, unknown historical dates, province minimum and date edit queue tests.');
