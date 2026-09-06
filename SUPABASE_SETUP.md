@@ -4,7 +4,7 @@
 
 1. 在 https://supabase.com/dashboard 创建或选择你自己的项目。创建新项目时选择适合的地区和方案；数据库密码由项目所有者自行设置，不需要发给网站用户或写进代码。
 2. 在 SQL Editor 中执行 `supabase/migrations/001_city_visits.sql`。该迁移新建 `city_visits`，启用强制 RLS；匿名访问无表权限，登录用户只能读取、插入、更新自己的行。
-3. Authentication → URL Configuration：Site URL 设为 `https://goooodsky.github.io/shanhe-footprints/`；把相同网址加入 Redirect URLs。开发调试时另加实际本地网址。
+3. Authentication → URL Configuration：Site URL 设为 `https://ijokerpro.github.io/shanhe-footprints/`；把相同网址加入 Redirect URLs。开发调试时另加实际本地网址。
 4. 启用 Email provider。保留默认 Magic Link 邮件模板即可。Supabase 内置邮件服务有收件人与速率限制；供其他人使用前应配置自己的 SMTP 并验证发信。
 5. 在项目 Connect/API Keys 页面取得 Project URL 和 Publishable key。只将它们填写到 `public/cloud-config.json`：
 
